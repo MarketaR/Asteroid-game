@@ -7,6 +7,7 @@ import random
 ROTATION_SPEED = 200
 ACCELERATION = 300
 ASTEROID_SPEED = 200
+LASER_SPEED = 400
 
 
 def load_image(path):
@@ -27,6 +28,8 @@ asteroid_imgs = [
 
 spaceship_img = load_image(
     "/Users/Marketa/pyladies/asteroidy/playerShip2_blue.png")
+
+laser_img = load_image("/Users/Marketa/pyladies/asteroidy/laser.png")
 
 window = pyglet.window.Window()
 
@@ -104,6 +107,10 @@ class SpaceObject:
     def hit_by_spaceship(self, spaceship):
         pass
 
+    def delete(self):
+        if self in objects:
+            objects.remove(self)
+
 
 class Spaceship(SpaceObject):
 
@@ -125,6 +132,18 @@ class Spaceship(SpaceObject):
             rot = math.radians(self.rotation)
             self.x_speed = self.x_speed - dt * ACCELERATION * cos(rot)
             self.y_speed = self.y_speed - dt * ACCELERATION * sin(rot)
+
+        if pyglet.window.key.SPACE in pressed_keys:
+            laser = Laser(self.window)
+            objects.append(laser)
+
+            laser.x = self.x
+            laser.y = self.y
+            laser.rotation = self.rotation
+
+            rot = math.radians(self.rotation)
+            laser.x_speed = self.x_speed + LASER_SPEED * cos(rot)
+            laser.y_speed = self.y_speed + LASER_SPEED * sin(rot)
 
         super().tick(dt)
 
@@ -154,7 +173,20 @@ class Asteroid(SpaceObject):
         self.y_speed = random.uniform(-ASTEROID_SPEED, ASTEROID_SPEED)
 
     def hit_by_spaceship(self, spaceship):
-        raise Exception("Game Over")
+        if spaceship in objects:
+            objects.remove(spaceship)
+
+
+class Laser(SpaceObject):
+
+    def __init__(self, window):
+        super().__init__(window)
+        img = laser_img
+        self.sprite = pyglet.sprite.Sprite(img, batch=batch)
+
+        self.radius = 5
+        self.x_speed = 200
+
 
 objects = []
 objects.append(Spaceship(window))
