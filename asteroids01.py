@@ -119,6 +119,8 @@ class Spaceship(SpaceObject):
         self.sprite = pyglet.sprite.Sprite(spaceship_img, batch=batch)
         self.radius = 20
 
+        self.laser_cooldown = 0
+
     def tick(self, dt):
         if pyglet.window.key.LEFT in pressed_keys:
             self.rotation = self.rotation - ROTATION_SPEED * dt
@@ -133,8 +135,13 @@ class Spaceship(SpaceObject):
             self.x_speed = self.x_speed - dt * ACCELERATION * cos(rot)
             self.y_speed = self.y_speed - dt * ACCELERATION * sin(rot)
 
+        self.laser_cooldown = self.laser_cooldown - dt
+
         if pyglet.window.key.SPACE in pressed_keys:
+            if self.laser_cooldown < 0:
+
             laser = Laser(self.window)
+
             objects.append(laser)
 
             laser.x = self.x
@@ -175,6 +182,10 @@ class Asteroid(SpaceObject):
     def hit_by_spaceship(self, spaceship):
         if spaceship in objects:
             objects.remove(spaceship)
+
+    def hit_by_laser(self, laser):
+        self.delete()
+        laser.delete()
 
 
 class Laser(SpaceObject):
